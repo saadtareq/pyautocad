@@ -36,6 +36,7 @@ def unformat_mtext(s, exclude_list=('P', 'S')):
     return s
 
 
+
 def mtext_to_string(s):
     """
     Returns string with removed format innformation as :func:`unformat_mtext` and
@@ -119,3 +120,48 @@ def dynamic_print(text):
     """
     sys.stdout.write('\r%s' % text)
     sys.stdout.flush()
+
+def insert_block(doc, block_name, insertion_point, scale=1.0, rotation=0.0):
+    """Inserts a block reference into the drawing."""
+    block = doc.Blocks.Item(block_name)
+    return doc.ModelSpace.InsertBlock(insertion_point, block_name, scale, scale, scale, rotation)
+
+
+def ensure_layer(doc, layer_name, color_index=256):
+    """Creates a layer if it doesn't exist."""
+    layers = doc.Layers
+    if not layers.Item(layer_name):
+        layer = layers.Add(layer_name)
+        layer.Color = color_index
+    return layers.Item(layer_name)
+
+def create_text(doc, text_string, insertion_point, height=2.5, rotation=0.0):
+    """Creates a single-line text object."""
+    text_obj = doc.ModelSpace.AddText(text_string, insertion_point, height)
+    text_obj.Rotation = rotation
+    return text_obj
+
+def create_polyline(doc, points, closed=True):
+    """Creates a polyline from a list of (x, y, z) tuples."""
+    pline = doc.ModelSpace.AddPolyline(points)
+    if closed:
+        pline.Closed = True
+    return pline
+
+def get_bounding_box(entity):
+    """Returns the bounding box of an entity as (min_point, max_point)."""
+    return entity.GetBoundingbox()
+
+def filter_entities(doc, entity_type):
+    """Returns a list of entities of a specific type from ModelSpace."""
+    return [e for e in doc.ModelSpace if e.ObjectName.endswith(entity_type)]
+
+def delete_entities_by_layer(doc, layer_name):
+    """Deletes all entities on a specified layer."""
+    for entity in doc.ModelSpace:
+        if entity.Layer == layer_name:
+            entity.Delete()
+
+
+
+
